@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <title>My Wish List</title>
+</head>
+<body>
+<div class="container">
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="header">
+        <h1>Hello {{first_name}}!</h1>
+        <a class='logout' href="/logout">Logout</a>
+    </div>
+    <h4>Your Wish List:</h4>
+    <table class='table table-striped'>
+        <thead>
+            <tr>
+                <td>Item</td>
+                <td>Added By</td>
+                <td>Date Added</td>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in user_list %}  
+            <tr>
+                <td><a href="/wish_items/{{i.id}}">{{i.item}}</a></td>
+                <td>{{i.uploader.first_name}}</td>
+                <td>{{i.created_at}}</td>
+                <td>
+                    {% if i.uploader.id == request.session.user_id %}
+                        <form action="delete" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value='Delete' class='btn btn-link'>
+                        <input type='hidden' name="user_id" value="{{request.session.user_id}}">
+                        <input type='hidden' name="item_id" value="{{i.id}}"></form>
+                    {% else %}
+                        <form action="remove/{{i.id}}" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value='Remove From My Wishlist' class='btn btn-link'>
+                        <input type='hidden' name="item_id" value="{{i.id}}"></form>
+                    {% endif %}
+                </td>
+            </tr> 
+            {% endfor %}
+        </tbody>
+    </table><br>
+    <h4>Other Users' Wish List:</h4>
+    <table class='table table-striped'>
+        <thead>
+            <tr>
+                <td>Item</td>
+                <td>Added By</td>
+                <td>Date Added</td>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in all_users %}
+            <tr>
+                <td><a href="/wish_items/{{i.id}}">{{i.item}}</a></td>
+                <td>{{i.uploader.first_name}}</td>
+                <td>{{i.created_at}}</td>
+                {% if i.liked_users.id != request.session.user_id %}
+                <td><form action="add" method="post">
+                    {% csrf_token %}
+                    <input type="submit" value='Add To My Wishlist' class='btn btn-link'>
+                    <input type='hidden' name="user_id" value="{{request.session.user_id}}">
+                    <input type='hidden' name="item_id" value="{{i.id}}"></form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a class='add' href="/create">Add Item</a>
+</div>
+</body>
+<style>
+    table, thead, tr, td{
+        border: 2px solid black;
+        border-collapse: collapse;
+    }
+    thead{
+        font-weight: bold;
+    }
+    .logout{
+        float: right;
+        position: relative;
+        bottom: 20px;
+    }
+    .add{
+        float: right;
+        margin-bottom: 20px;
+    }
+</style>
+</html>
